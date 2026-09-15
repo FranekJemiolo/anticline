@@ -10,22 +10,23 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout Anticline
         uses: actions/checkout@v4
 
       - name: Checkout Orogen protocol dependency
         uses: actions/checkout@v4
         with:
           repository: FranekJemiolo/orogen
-          path: ../orogen
+          path: orogen
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Build Orogen
+      - name: Build Orogen and link dependency
         run: |
+          ln -s $(pwd)/orogen ../orogen
           cd ../orogen
           npm install
           npm run build
