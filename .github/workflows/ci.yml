@@ -1,0 +1,46 @@
+name: Anticline CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout Orogen protocol dependency
+        uses: actions/checkout@v4
+        with:
+          repository: FranekJemiolo/orogen
+          path: orogen
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: package.json
+
+      - name: Build Orogen
+        run: |
+          cd orogen
+          npm ci || npm install
+          npm run build
+          cd ..
+
+      - name: Install Anticline dependencies
+        run: npm ci || npm install
+
+      - name: Typecheck & Lint
+        run: npm run lint
+
+      - name: Unit Tests
+        run: npm test
+
+      - name: Build PWA Bundle
+        run: npm run build

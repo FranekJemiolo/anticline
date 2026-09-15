@@ -1,0 +1,48 @@
+{
+  "name": "@franekjemiolo/anticline",
+  "version": "1.0.0",
+  "description": "Offline-first visual quant terminal and visual workbench for Orogen lakehouse",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "lint": "tsc --noEmit",
+    "lighthouse": "lhci autorun"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FranekJemiolo/anticline.git"
+  },
+  "keywords": [
+    "quant-terminal",
+    "financial-charts",
+    "lightweight-charts",
+    "asof-join",
+    "crdt",
+    "pwa",
+    "duckdb-wasm",
+    "orogen"
+  ],
+  "author": "Franek Jemiolo",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@franekjemiolo/orogen": "file:../orogen",
+    "apache-arrow": "^18.1.0",
+    "idb": "^8.0.0",
+    "lightweight-charts": "^4.2.1",
+    "yjs": "^13.6.20"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.14.0",
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.1",
+    "happy-dom": "^20.14.5",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vitest": "^2.1.8"
+  }
+}

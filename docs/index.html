@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anticline Terminal Documentation</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #0a0e17;
+      color: #cbd5e1;
+    }
+    h1, h2, h3 { color: #38bdf8; }
+    code { background: #1e293b; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; }
+    pre { background: #0f172a; padding: 1rem; border-radius: 6px; overflow-x: auto; border: 1px solid #334155; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; background: #0284c7; color: white; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Anticline Quant Terminal <span class="badge">v1.0.0</span></h1>
+  <p><strong>Offline-first visual client and analytical workbench for the Orogen lakehouse.</strong></p>
+
+  <h2>Architectural Pillars</h2>
+  <ul>
+    <li><strong>Cross-Origin Isolation:</strong> Embedded <code>coi-serviceworker</code> injecting COOP/COEP for multithreaded WASM and SharedArrayBuffer memory buffers.</li>
+    <li><strong>Zero-Copy Data Bridge:</strong> Direct Arrow vector sharing between DuckDB worker and main UI thread without serialization bottlenecks.</li>
+    <li><strong>Delta-Append Dual-Store:</strong> Blends historical OPFS cold partitions with live in-memory streaming hot buffers, auto-flushing at 50,000 ticks.</li>
+    <li><strong>Visual ASOF Join Builder:</strong> Drag-and-drop temporal joins aligning macroeconomic indicators with intraday trade series.</li>
+    <li><strong>P2P CRDT Multiplayer:</strong> Yjs mesh syncing collaborative overlays, trendlines, and viewport anchors.</li>
+    <li><strong>NAT Traversal Settings:</strong> STUN/TURN fallback diagnostics alerting users when symmetric NAT blocks peer swarms.</li>
+  </ul>
+</body>
+</html>
