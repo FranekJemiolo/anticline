@@ -110,7 +110,7 @@ export class DatasetRegistry {
               </span>
             </div>
             <div class="dataset-name">${d.name}</div>
-            <div class="dataset-meta">${d.schema.map((s) => s.column).join(', ')}</div>
+            <div class="dataset-meta">${d.schema.map((s: { column: string }) => s.column).join(', ')}</div>
             <div style="margin-top: 0.5rem; display: flex; gap: 0.4rem;">
               <button class="btn-primary btn-etl" data-id="${d.id}" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
                 Run ETL (${d.etl.engine === 'duckdb-sql' ? 'SQL' : 'Pyodide'})
