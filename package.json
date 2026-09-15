@@ -34,12 +34,14 @@
     "apache-arrow": "^18.1.0",
     "idb": "^8.0.0",
     "lightweight-charts": "^4.2.1",
+    "pyodide": "^314.0.7",
     "yjs": "^13.6.20"
   },
   "devDependencies": {
     "@lhci/cli": "^0.14.0",
     "@playwright/test": "^1.49.0",
     "@types/node": "^22.10.1",
+    "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.14.5",
     "typescript": "^5.7.2",
     "vite": "^6.0.3",
