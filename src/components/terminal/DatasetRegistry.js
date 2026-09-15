@@ -143,6 +143,85 @@ export class DatasetRegistry {
                 script: 'SELECT CAST(to_timestamp(CAST(date AS BIGINT)) AS TIMESTAMP) AS date, CAST(totalLiquidityUSD AS FLOAT64) AS totalLiquidityUSD FROM read_json_auto(\'https://api.llama.fi/charts\');',
             },
         },
+        {
+            id: 'ecb-eur-usd',
+            name: 'ECB EUR/USD Euro Reference Rate',
+            description: 'Daily official EUR/USD foreign exchange reference rates from European Central Bank Data Portal API get_observations endpoint',
+            asset_class: 'fx',
+            schema: [
+                { column: 'period', type: 'TIMESTAMP' },
+                { column: 'value', type: 'FLOAT32' },
+            ],
+            etl: {
+                engine: 'duckdb-sql',
+                source_api: 'https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A/get_observations?format=jsondata',
+                script: "SELECT CAST(period AS TIMESTAMP) AS period, CAST(value AS FLOAT32) AS value FROM read_json_auto('https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A/get_observations?format=jsondata');",
+            },
+        },
+        {
+            id: 'fred-ice-bofa-hy',
+            name: 'ICE BofA US High Yield OAS Spread',
+            description: 'Option-Adjusted Spread of ICE BofA US High Yield Index (BAMLH0A0HYM2) tracking corporate credit risk over Treasuries',
+            asset_class: 'fixed_income',
+            schema: [
+                { column: 'date', type: 'TIMESTAMP' },
+                { column: 'spread', type: 'FLOAT32' },
+            ],
+            etl: {
+                engine: 'duckdb-sql',
+                source_api: 'https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&file_type=json',
+                script: "WITH raw_data AS (SELECT UNNEST(observations) AS obs FROM read_json_auto('{{CORS_PROXY}}https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&file_type=json&api_key={{FRED_API_KEY}}')) SELECT CAST(obs.date AS TIMESTAMP) AS date, CAST(NULLIF(obs.value, '.') AS FLOAT32) AS spread FROM raw_data WHERE obs.value != '.';",
+            },
+        },
+        {
+            id: 'wb-global-gdp',
+            name: 'World Bank US & EU Annual GDP',
+            description: 'Annual Gross Domestic Product in current USD (NY.GDP.MKTP.CD) for United States and European Union',
+            asset_class: 'macro',
+            schema: [
+                { column: 'date', type: 'TIMESTAMP' },
+                { column: 'gdp_usd', type: 'FLOAT64' },
+            ],
+            etl: {
+                engine: 'duckdb-sql',
+                source_api: 'http://api.worldbank.org/v2/country/US;EU/indicator/NY.GDP.MKTP.CD?format=json&per_page=1000',
+                script: "WITH records AS (SELECT UNNEST(from_json(json, '[{\"date\": \"VARCHAR\", \"value\": \"DOUBLE\"}]')) AS r FROM read_json_auto('http://api.worldbank.org/v2/country/US;EU/indicator/NY.GDP.MKTP.CD?format=json&per_page=1000') WHERE json LIKE '[%') SELECT CAST(strptime(r.date, '%Y') AS TIMESTAMP) AS date, CAST(r.value AS FLOAT64) AS gdp_usd FROM records WHERE r.value IS NOT NULL;",
+            },
+        },
+        {
+            id: 'wb-pink-sheet',
+            name: 'World Bank Pink Sheet Commodities',
+            description: 'Monthly global commodity price benchmark indices covering energy, industrial metals, and agriculture',
+            asset_class: 'commodities',
+            schema: [
+                { column: 'date', type: 'TIMESTAMP' },
+                { column: 'commodity_index', type: 'FLOAT64' },
+                { column: 'energy_index', type: 'FLOAT64' },
+                { column: 'metals_index', type: 'FLOAT64' },
+                { column: 'agriculture_index', type: 'FLOAT64' },
+            ],
+            etl: {
+                engine: 'pyodide-python',
+                source_api: 'https://raw.githubusercontent.com/datasets/commodity-prices/master/data/commodity-prices.csv',
+                requirements: ['requests', 'pandas', 'pyarrow'],
+                script: '# World Bank Pink Sheet Monthly Commodities Pipeline\nresult_arrow = None',
+            },
+        },
+        {
+            id: 'open-meteo-brazil-rain',
+            name: 'Open-Meteo Brazil Rainfall Tracker',
+            description: '10 years of daily precipitation sum data for Minas Gerais, Brazil (primary coffee production basin)',
+            asset_class: 'alternative',
+            schema: [
+                { column: 'time', type: 'TIMESTAMP' },
+                { column: 'precipitation_sum', type: 'FLOAT32' },
+            ],
+            etl: {
+                engine: 'duckdb-sql',
+                source_api: 'https://archive-api.open-meteo.com/v1/archive?latitude=-18.5122&longitude=-44.5550&start_date=2014-01-01&end_date=2024-01-01&daily=precipitation_sum&timezone=America%2FSao_Paulo',
+                script: "SELECT CAST(UNNEST(daily.time) AS TIMESTAMP) AS time, CAST(UNNEST(daily.precipitation_sum) AS FLOAT) AS precipitation_sum FROM read_json_auto('https://archive-api.open-meteo.com/v1/archive?latitude=-18.5122&longitude=-44.5550&start_date=2014-01-01&end_date=2024-01-01&daily=precipitation_sum&timezone=America%2FSao_Paulo');",
+            },
+        },
     ];
     constructor(container, options) {
         this.container = container;
@@ -182,6 +261,9 @@ export class DatasetRegistry {
         <button class="filter-chip ${this.selectedAssetClass === 'all' ? 'active' : ''}" data-filter-class="all">All</button>
         <button class="filter-chip ${this.selectedAssetClass === 'macro' ? 'active' : ''}" data-filter-class="macro">Macro</button>
         <button class="filter-chip ${this.selectedAssetClass === 'equities' ? 'active' : ''}" data-filter-class="equities">Equities</button>
+        <button class="filter-chip ${this.selectedAssetClass === 'fixed_income' ? 'active' : ''}" data-filter-class="fixed_income">Fixed Income</button>
+        <button class="filter-chip ${this.selectedAssetClass === 'commodities' ? 'active' : ''}" data-filter-class="commodities">Commodities</button>
+        <button class="filter-chip ${this.selectedAssetClass === 'fx' ? 'active' : ''}" data-filter-class="fx">FX</button>
         <button class="filter-chip ${this.selectedAssetClass === 'crypto' ? 'active' : ''}" data-filter-class="crypto">Crypto</button>
         <button class="filter-chip ${this.selectedAssetClass === 'alternative' ? 'active' : ''}" data-filter-class="alternative">Alternative</button>
         <button class="filter-chip ${this.selectedAssetClass === 'fundamentals' ? 'active' : ''}" data-filter-class="fundamentals">Fundamentals</button>
@@ -203,7 +285,13 @@ export class DatasetRegistry {
                                 ? 'badge-fundamentals'
                                 : d.asset_class === 'sentiment'
                                     ? 'badge-sentiment'
-                                    : 'badge-alternative';
+                                    : d.asset_class === 'fixed_income'
+                                        ? 'badge-fixed-income'
+                                        : d.asset_class === 'commodities'
+                                            ? 'badge-commodities'
+                                            : d.asset_class === 'fx'
+                                                ? 'badge-fx'
+                                                : 'badge-alternative';
                 const isSubscribed = this.subscribedDatasetIds.has(d.id);
                 return `
             <div class="dataset-card" data-id="${d.id}">
