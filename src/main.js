@@ -227,3 +227,11 @@ if (document.readyState === 'loading') {
 else {
     bootstrap();
 }
+// Register PWA Offline Cache Service Worker
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !window.location.hostname.includes('localhost')) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.warn('PWA service worker registration warning:', err);
+        });
+    });
+}

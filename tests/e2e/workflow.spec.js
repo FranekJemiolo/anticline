@@ -16,7 +16,7 @@ test.describe('Anticline End-to-End Workflow', () => {
         await expect(registry).toBeVisible();
         await expect(page.locator('.dataset-card').first()).toBeVisible();
         // Take screenshot 1: Dataset Registry view
-        const assetPath1 = resolve(__dirname, '../../docs/assets/dataset-registry.png');
+        const assetPath1 = resolve(process.cwd(), 'docs/assets/dataset-registry.png');
         await page.screenshot({ path: assetPath1 });
         // Click Run Pyodide ETL on first dataset
         const btnEtl = page.locator('.btn-etl').first();
@@ -30,7 +30,7 @@ test.describe('Anticline End-to-End Workflow', () => {
         const canvas = page.locator('#chart-container canvas').first();
         await expect(canvas).toBeVisible();
         // Take screenshot 2: Multi-Dataset Charting canvas with ASOF joined data
-        const assetPath2 = resolve(__dirname, '../../docs/assets/asof-join-chart.png');
+        const assetPath2 = resolve(process.cwd(), 'docs/assets/asof-join-chart.png');
         await page.screenshot({ path: assetPath2 });
     });
 });

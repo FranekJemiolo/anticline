@@ -28,7 +28,7 @@ test.describe('P2P WebRTC Multi-Peer Swarm Test', () => {
         const canvasB = pageB.locator('#chart-container canvas').first();
         await expect(canvasB).toBeVisible();
         // Capture collaborative multiplayer screenshot
-        const assetPath3 = resolve(__dirname, '../../docs/assets/multiplayer-session.png');
+        const assetPath3 = resolve(process.cwd(), 'docs/assets/multiplayer-session.png');
         await pageB.screenshot({ path: assetPath3 });
         await contextA.close();
         await contextB.close();
