@@ -65,6 +65,16 @@ npm run test:e2e
 npm run lighthouse
 ```
 
+## Data Sources & Secret Vault
+
+Anticline connects to the decentralized Orogen catalog with 18 multi-asset production connectors (Macro, Equities, Fixed Income, FX, Commodities, Crypto, Fundamentals, Sentiment, Alternative, Satellite, and News feeds).
+
+- **Encrypted Local Vault**: API keys (e.g. FRED) are protected at rest via **AES-GCM (256-bit)** with keys derived via **PBKDF2 (100,000 rounds)** and stored strictly in IndexedDB (`orogen_vault`).
+- **Zero Plaintext Leaks**: Keys exist only in ephemeral execution memory when running queries.
+- **Configurable Proxies**: Built-in support for CORS proxies and custom endpoint proxies.
+
+📖 For complete instructions on managing secrets, configuring sources, and adding new feeds, see the [Anticline Data Sources Guide](docs/DATA_SOURCES.md).
+
 ## License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
