@@ -267,6 +267,107 @@ export class DatasetRegistry {
           "SELECT CAST(UNNEST(daily.time) AS TIMESTAMP) AS time, CAST(UNNEST(daily.precipitation_sum) AS FLOAT) AS precipitation_sum FROM read_json_auto('https://archive-api.open-meteo.com/v1/archive?latitude=-18.5122&longitude=-44.5550&start_date=2014-01-01&end_date=2024-01-01&daily=precipitation_sum&timezone=America%2FSao_Paulo');",
       },
     },
+    {
+      id: 'sentinel2-l2a-earth-search',
+      name: 'Sentinel-2 Satellite Earth Observation Catalog',
+      description:
+        'Multispectral optical satellite imagery metadata and preview tiles from ESA Copernicus Sentinel-2 via AWS Earth Search STAC API',
+      asset_class: 'satellite',
+      schema: [
+        { column: 'acquired_at', type: 'TIMESTAMP' },
+        { column: 'scene_id', type: 'UTF8' },
+        { column: 'cloud_cover', type: 'FLOAT32' },
+        { column: 'grid_code', type: 'UTF8' },
+        { column: 'thumbnail_url', type: 'UTF8' },
+      ],
+      etl: {
+        engine: 'duckdb-sql',
+        source_api:
+          'https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items?limit=100',
+        script:
+          'WITH features_raw AS (SELECT UNNEST(features) AS feat FROM read_json_auto(\'https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items?limit=100\')) SELECT CAST(feat.properties.datetime AS TIMESTAMP) AS acquired_at, CAST(feat.id AS VARCHAR) AS scene_id, CAST(feat.properties."eo:cloud_cover" AS FLOAT) AS cloud_cover, CAST(feat.properties."grid:code" AS VARCHAR) AS grid_code, CAST(feat.assets.thumbnail.href AS VARCHAR) AS thumbnail_url FROM features_raw;',
+      },
+    },
+    {
+      id: 'nasa-earth-observatory',
+      name: 'NASA Earth Observatory Satellite Events Feed',
+      description:
+        'Daily satellite remote sensing of global environmental events, droughts, wildfire anomalies, and commodity disruptions from NASA',
+      asset_class: 'satellite',
+      schema: [
+        { column: 'date', type: 'TIMESTAMP' },
+        { column: 'title', type: 'UTF8' },
+        { column: 'article_url', type: 'UTF8' },
+      ],
+      etl: {
+        engine: 'pyodide-python',
+        source_api:
+          'https://earthobservatory.nasa.gov/feeds/earth-observatory.rss',
+        requirements: ['requests', 'pandas', 'pyarrow'],
+        script:
+          '# NASA Earth Observatory Satellite Feed Pipeline\nresult_arrow = None',
+      },
+    },
+    {
+      id: 'fed-press-releases',
+      name: 'Federal Reserve Monetary Policy & Press Releases',
+      description:
+        'Official real-time press releases, FOMC policy statements, and regulatory decisions from the Federal Reserve Board RSS stream',
+      asset_class: 'news',
+      schema: [
+        { column: 'date', type: 'TIMESTAMP' },
+        { column: 'title', type: 'UTF8' },
+        { column: 'link', type: 'UTF8' },
+      ],
+      etl: {
+        engine: 'pyodide-python',
+        source_api: 'https://www.federalreserve.gov/feeds/press_all.xml',
+        requirements: ['requests', 'pandas', 'pyarrow'],
+        script:
+          '# Federal Reserve Press Releases RSS Pipeline\nresult_arrow = None',
+      },
+    },
+    {
+      id: 'sec-edgar-filings-stream',
+      name: 'SEC EDGAR Real-Time Corporate Filings Stream',
+      description:
+        'Real-time material corporate disclosure filings (Form 8-K, 10-K, 10-Q) from the US SEC EDGAR Atom service with User-Agent injection',
+      asset_class: 'news',
+      schema: [
+        { column: 'updated_at', type: 'TIMESTAMP' },
+        { column: 'title', type: 'UTF8' },
+        { column: 'filing_url', type: 'UTF8' },
+      ],
+      etl: {
+        engine: 'pyodide-python',
+        source_api:
+          'https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&CIK=&type=&company=&dateb=&owner=include&start=0&count=100&output=atom',
+        requirements: ['requests', 'pandas', 'pyarrow'],
+        script:
+          '# SEC EDGAR Filings Atom Stream Pipeline\nresult_arrow = None',
+      },
+    },
+    {
+      id: 'market-sentiment-news',
+      name: 'Real-Time Market Sentiment News Stream',
+      description:
+        'High-velocity technology, venture, and market sentiment news stream with engagement score, comments, timestamps, and URLs',
+      asset_class: 'news',
+      schema: [
+        { column: 'published_at', type: 'TIMESTAMP' },
+        { column: 'headline', type: 'UTF8' },
+        { column: 'score', type: 'FLOAT32' },
+        { column: 'comment_count', type: 'FLOAT32' },
+        { column: 'article_url', type: 'UTF8' },
+      ],
+      etl: {
+        engine: 'duckdb-sql',
+        source_api:
+          'https://hn.algolia.com/api/v1/search_by_date?tags=story&hitsPerPage=100',
+        script:
+          "WITH raw_hits AS (SELECT UNNEST(hits) AS hit FROM read_json_auto('https://hn.algolia.com/api/v1/search_by_date?tags=story&hitsPerPage=100')) SELECT CAST(hit.created_at AS TIMESTAMP) AS published_at, CAST(hit.title AS VARCHAR) AS headline, CAST(hit.points AS FLOAT) AS score, CAST(hit.num_comments AS FLOAT) AS comment_count, CAST(COALESCE(hit.url, '') AS VARCHAR) AS article_url FROM raw_hits;",
+      },
+    },
   ];
 
   constructor(container: HTMLElement, options: DatasetRegistryOptions) {
@@ -312,6 +413,8 @@ export class DatasetRegistry {
         <button class="filter-chip ${this.selectedAssetClass === 'fixed_income' ? 'active' : ''}" data-filter-class="fixed_income">Fixed Income</button>
         <button class="filter-chip ${this.selectedAssetClass === 'commodities' ? 'active' : ''}" data-filter-class="commodities">Commodities</button>
         <button class="filter-chip ${this.selectedAssetClass === 'fx' ? 'active' : ''}" data-filter-class="fx">FX</button>
+        <button class="filter-chip ${this.selectedAssetClass === 'satellite' ? 'active' : ''}" data-filter-class="satellite">Satellite</button>
+        <button class="filter-chip ${this.selectedAssetClass === 'news' ? 'active' : ''}" data-filter-class="news">News</button>
         <button class="filter-chip ${this.selectedAssetClass === 'crypto' ? 'active' : ''}" data-filter-class="crypto">Crypto</button>
         <button class="filter-chip ${this.selectedAssetClass === 'alternative' ? 'active' : ''}" data-filter-class="alternative">Alternative</button>
         <button class="filter-chip ${this.selectedAssetClass === 'fundamentals' ? 'active' : ''}" data-filter-class="fundamentals">Fundamentals</button>
@@ -341,6 +444,10 @@ export class DatasetRegistry {
                       ? 'badge-commodities'
                       : d.asset_class === 'fx'
                       ? 'badge-fx'
+                      : d.asset_class === 'satellite'
+                      ? 'badge-satellite'
+                      : d.asset_class === 'news'
+                      ? 'badge-news'
                       : 'badge-alternative';
 
                   const isSubscribed = this.subscribedDatasetIds.has(d.id);

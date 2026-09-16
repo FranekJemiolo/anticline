@@ -493,6 +493,8 @@ button {
 .badge-fixed-income { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
 .badge-commodities { background: rgba(217, 119, 6, 0.15); color: #fbbf24; }
 .badge-fx { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
+.badge-satellite { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+.badge-news { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
 
 
 /* Filter Bar */
